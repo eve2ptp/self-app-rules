@@ -1,0 +1,16 @@
+# Merge these fields into your existing Clash Meta / mihomo configuration.
+mode: rule
+find-process-mode: strict
+
+rule-providers:
+  hk-bank:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/eve2ptp/hk-bank/main/clash-meta/hk-bank.yaml
+    path: ./rule-providers/hk-bank.yaml
+    interval: 86400
+
+# Insert before general GEOIP / GEOSITE rules and the final MATCH rule.
+rules:
+  - RULE-SET,hk-bank,DIRECT

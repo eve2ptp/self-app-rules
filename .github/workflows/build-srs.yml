@@ -6,6 +6,11 @@ on:
       - main
     paths:
       - "hk-bank.json"
+      - "compile-hk-bank-srs.sh"
+      - "clash-meta/build.py"
+      - "custom-app/direct.json"
+      - "custom-app/proxy.json"
+      - "custom-app/build.py"
       - ".github/workflows/**"
   workflow_dispatch:
 
@@ -36,14 +41,21 @@ jobs:
       - name: Compile rule-set
         run: sh compile-hk-bank-srs.sh
 
-      - name: Commit hk-bank.srs
+      - name: Build bank Clash Meta rule-set
+        run: python3 clash-meta/build.py
+
+      - name: Build custom app rule-sets
+        run: python3 custom-app/build.py
+
+      - name: Commit generated rule-sets
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if ! git diff --quiet hk-bank.srs; then
-            git add hk-bank.srs
-            git commit -m "chore: rebuild hk-bank.srs"
+          git add hk-bank.srs clash-meta/hk-bank.yaml custom-app/direct.srs custom-app/proxy.srs \
+            custom-app/clash-meta/direct.yaml custom-app/clash-meta/proxy.yaml
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: rebuild rule-sets"
             git push
           else
-            echo "hk-bank.srs is up to date"
+            echo "Rule-sets are up to date"
           fi
