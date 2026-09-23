@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "rules": [
+    {
+      "package_name": [
+        "com.kraken.pay.app",
+        "com.kraken.invest.app"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "krak.app",
+        "kraken.com"
+      ]
+    }
+  ]
+}

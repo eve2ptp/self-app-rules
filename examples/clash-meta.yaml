@@ -1,0 +1,70 @@
+# 合并到现有 mihomo 配置；PROXY 替换为已有的普通代理组。
+# 德国节点01 替换为实际德国出口节点，Bybit-EU-DE 组内只保留德国节点。
+mode: rule
+find-process-mode: strict
+
+proxy-groups:
+  - name: Bybit-EU-DE
+    type: select
+    proxies:
+      - 德国节点01
+
+rule-providers:
+  # Bybit EU：德国专用出口，独立于普通代理。
+  bybit-eu:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/eve2ptp/hk-bank/main/clash-meta/bybit-eu.mrs
+    path: ./rule-providers/bybit-eu.mrs
+    interval: 86400
+  bybit-eu-process:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/eve2ptp/hk-bank/main/clash-meta/bybit-eu-process.yaml
+    path: ./rule-providers/bybit-eu-process.yaml
+    interval: 86400
+  # 直连：香港银行、数字银行与支付、币安/Bitget Wallet/Neverless、券商。
+  direct:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/eve2ptp/hk-bank/main/clash-meta/direct.mrs
+    path: ./rule-providers/direct.mrs
+    interval: 86400
+  direct-process:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/eve2ptp/hk-bank/main/clash-meta/direct-process.yaml
+    path: ./rule-providers/direct-process.yaml
+    interval: 86400
+  # 普通代理：Krak、Kraken。Bybit EU 不包含在此组。
+  proxy:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/eve2ptp/hk-bank/main/clash-meta/proxy.mrs
+    path: ./rule-providers/proxy.mrs
+    interval: 86400
+  proxy-process:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/eve2ptp/hk-bank/main/clash-meta/proxy-process.yaml
+    path: ./rule-providers/proxy-process.yaml
+    interval: 86400
+
+# 放在通用 GEOIP / GEOSITE 和最终 MATCH 之前。
+rules:
+  # 德国专用规则优先；保留 REJECT，阻止不支持 UDP 时继续匹配其他出口。
+  - RULE-SET,bybit-eu-process,Bybit-EU-DE
+  - RULE-SET,bybit-eu,Bybit-EU-DE
+  - RULE-SET,bybit-eu-process,REJECT
+  - RULE-SET,bybit-eu,REJECT
+
+  - RULE-SET,direct-process,DIRECT
+  - RULE-SET,direct,DIRECT
+  - RULE-SET,proxy-process,PROXY
+  - RULE-SET,proxy,PROXY

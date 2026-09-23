@@ -1,0 +1,63 @@
+{
+  "outbounds": [
+    {
+      "type": "selector",
+      "tag": "Bybit-EU-DE",
+      "outbounds": [
+        "德国节点01"
+      ],
+      "default": "德国节点01"
+    }
+  ],
+  "route": {
+    "rule_set": [
+      {
+        "type": "remote",
+        "tag": "bybit-eu",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/eve2ptp/hk-bank/main/bybit-eu.srs",
+        "download_detour": "proxy",
+        "update_interval": "1d"
+      },
+      {
+        "type": "remote",
+        "tag": "direct",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/eve2ptp/hk-bank/main/direct.srs",
+        "download_detour": "proxy",
+        "update_interval": "1d"
+      },
+      {
+        "type": "remote",
+        "tag": "proxy",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/eve2ptp/hk-bank/main/proxy.srs",
+        "download_detour": "proxy",
+        "update_interval": "1d"
+      }
+    ],
+    "rules": [
+      {
+        "rule_set": [
+          "bybit-eu"
+        ],
+        "action": "route",
+        "outbound": "Bybit-EU-DE"
+      },
+      {
+        "rule_set": [
+          "direct"
+        ],
+        "action": "route",
+        "outbound": "direct"
+      },
+      {
+        "rule_set": [
+          "proxy"
+        ],
+        "action": "route",
+        "outbound": "proxy"
+      }
+    ]
+  }
+}

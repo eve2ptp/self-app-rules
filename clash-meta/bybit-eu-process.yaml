@@ -1,0 +1,5 @@
+# Generated from bybit-eu.json by build.py.
+# Process rules are separate because MRS does not support PROCESS-NAME.
+# Clash Meta / mihomo: behavior: classical, format: yaml
+payload:
+  - "PROCESS-NAME,com.bybit.eu"

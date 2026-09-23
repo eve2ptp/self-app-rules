@@ -1,0 +1,6 @@
+# Generated from proxy.json by build.py.
+# Process rules are separate because MRS does not support PROCESS-NAME.
+# Clash Meta / mihomo: behavior: classical, format: yaml
+payload:
+  - "PROCESS-NAME,com.kraken.pay.app"
+  - "PROCESS-NAME,com.kraken.invest.app"

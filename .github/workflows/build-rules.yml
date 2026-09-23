@@ -1,0 +1,94 @@
+name: Build financial rule-sets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "direct.json"
+      - "proxy.json"
+      - "bybit-eu.json"
+      - "build.py"
+      - "tests/**"
+      - "examples/**"
+      - ".gitattributes"
+      - ".github/workflows/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "direct.json"
+      - "proxy.json"
+      - "bybit-eu.json"
+      - "build.py"
+      - "tests/**"
+      - "examples/**"
+      - ".gitattributes"
+      - ".github/workflows/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-rules-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SING_BOX_VERSION: "1.14.1"
+      MIHOMO_VERSION: "1.19.31"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Test rule conversion and build isolation
+        run: python3 -m unittest discover -s tests -v
+
+      - name: Install sing-box
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="sing-box-${SING_BOX_VERSION}-linux-amd64.tar.gz"
+          url="https://github.com/SagerNet/sing-box/releases/download/v${SING_BOX_VERSION}/${archive}"
+          curl -fSL --retry 3 --connect-timeout 15 --max-time 120 \
+            -o "$RUNNER_TEMP/$archive" "$url"
+          tar -xzf "$RUNNER_TEMP/$archive" -C "$RUNNER_TEMP"
+          sudo install -m 755 \
+            "$RUNNER_TEMP/sing-box-${SING_BOX_VERSION}-linux-amd64/sing-box" \
+            /usr/local/bin/sing-box
+          sing-box version
+
+      - name: Install mihomo
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="mihomo-linux-amd64-compatible-v${MIHOMO_VERSION}.gz"
+          url="https://github.com/MetaCubeX/mihomo/releases/download/v${MIHOMO_VERSION}/${archive}"
+          curl -fSL --retry 3 --connect-timeout 15 --max-time 120 \
+            -o "$RUNNER_TEMP/$archive" "$url"
+          gzip -dc "$RUNNER_TEMP/$archive" > "$RUNNER_TEMP/mihomo"
+          sudo install -m 755 "$RUNNER_TEMP/mihomo" /usr/local/bin/mihomo
+          mihomo -v
+
+      - name: Build all rule-sets
+        run: python3 build.py
+
+      - name: Commit generated rule-sets
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for group in direct proxy bybit-eu; do
+            git add "$group.srs" "clash-meta/$group.mrs" \
+              "clash-meta/$group-process.yaml"
+          done
+          if git diff --cached --quiet; then
+            echo "Rule-sets are up to date"
+          else
+            git commit -m "chore: rebuild financial rule-sets"
+            git push origin HEAD:main
+          fi

@@ -22,7 +22,19 @@
         "com.bochk.bocpay",
         "com.bea.ccbapp",
         "hk.com.paob.app.enterprise",
-        "com.airstarbank.mobilebanking"
+        "com.airstarbank.mobilebanking",
+        "com.alipay.antbank.hk.portal",
+        "com.ifast.gb",
+        "com.nextpls.starryblu",
+        "com.transferwise.android",
+        "com.unionpay.intl",
+        "com.bank.aplus.app.portal",
+        "com.binance.dev",
+        "com.bitkeep.wallet",
+        "money.boku.android",
+        "com.schwab.mobile",
+        "com.ibkr.gt.app",
+        "atws.app"
       ]
     },
     {
@@ -70,7 +82,33 @@
         "elebank.com",
         "livi.com",
         "paob.com.hk",
-        "pingandb.com"
+        "pingandb.com",
+        "antbank.hk",
+        "ifastgb.com",
+        "starryblu.com",
+        "wise.com",
+        "transferwise.com",
+        "cup.com.cn",
+        "95516.com",
+        "unionpayintl.com",
+        "antbank.mo",
+        "binance.com",
+        "binance.vision",
+        "bnbstatic.com",
+        "web3.bitget.com",
+        "bitkeep.com",
+        "bitkeep.vip",
+        "neverless.com",
+        "schwab.com",
+        "schwab.com.hk",
+        "schwab.co.uk",
+        "ibkr.com",
+        "ibkrguides.com",
+        "ibllc.com",
+        "interactivebrokers.com",
+        "interactivebrokers.com.hk",
+        "interactivebrokers.co.uk",
+        "interactivebrokers.com.sg"
       ]
     }
   ]
