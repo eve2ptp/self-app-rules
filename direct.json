@@ -33,6 +33,7 @@
         "com.bitkeep.wallet",
         "money.boku.android",
         "com.schwab.mobile",
+        "com.devexperts.tdmobile.platform.android.thinkorswim",
         "com.ibkr.gt.app",
         "atws.app"
       ]
@@ -102,6 +103,11 @@
         "schwab.com",
         "schwab.com.hk",
         "schwab.co.uk",
+        "mobile.launchdarkly.com",
+        "clientstream.launchdarkly.com",
+        "www.trefis.com",
+        "c.evidon.com",
+        "firebaseremoteconfig.googleapis.com",
         "ibkr.com",
         "ibkrguides.com",
         "ibllc.com",

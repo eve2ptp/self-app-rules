@@ -32,5 +32,6 @@ payload:
   - "PROCESS-NAME,com.bitkeep.wallet"
   - "PROCESS-NAME,money.boku.android"
   - "PROCESS-NAME,com.schwab.mobile"
+  - "PROCESS-NAME,com.devexperts.tdmobile.platform.android.thinkorswim"
   - "PROCESS-NAME,com.ibkr.gt.app"
   - "PROCESS-NAME,atws.app"

@@ -4,7 +4,7 @@
 
 | 规则组 | 收录范围 | 示例出口 | 包名 / 域名数 |
 | --- | --- | --- | --- |
-| [direct](direct.json) | 香港银行、数字银行与支付、部分加密应用、券商 | 直连 | 32 / 70 |
+| [direct](direct.json) | 香港银行、数字银行与支付、部分加密应用、券商 | 直连 | 33 / 75 |
 | [proxy](proxy.json) | Krak、Kraken | 普通代理 | 2 / 2 |
 | [bybit-eu](bybit-eu.json) | Bybit EU | 德国专用代理 `Bybit-EU-DE` | 1 / 2 |
 
@@ -52,10 +52,11 @@ build.py
 | 币安 | `com.binance.dev` | `binance.com`、`binance.vision`、`bnbstatic.com` |
 | Bitget Wallet | `com.bitkeep.wallet` | `web3.bitget.com`、`bitkeep.com`、`bitkeep.vip` |
 | Neverless | `money.boku.android` | `neverless.com` |
-| Schwab | `com.schwab.mobile` | `schwab.com`、`schwab.com.hk`、`schwab.co.uk` |
+| Schwab Mobile | `com.schwab.mobile` | `schwab.com`、`schwab.com.hk`、`schwab.co.uk` |
+| thinkorswim Trader | `com.devexperts.tdmobile.platform.android.thinkorswim` | `schwab.com`、`mobile.launchdarkly.com`、`clientstream.launchdarkly.com`、`www.trefis.com`、`c.evidon.com`、`firebaseremoteconfig.googleapis.com` |
 | IBKR GlobalTrader / IBKR Mobile | `com.ibkr.gt.app` / `atws.app` | `ibkr.com`、`ibkrguides.com`、`ibllc.com`、`interactivebrokers.com`、`interactivebrokers.com.hk`、`interactivebrokers.co.uk`、`interactivebrokers.com.sg` |
 
-原 `Trader` 条目按 IBKR GlobalTrader 收录。香港银行中保留了 `hsbc.com`、`sc.com`、`ccb.com` 等集团域名，匹配范围可能超出香港业务。直连使用当前网络的出口，不会自动获得香港 IP。
+原 IBKR `Trader` 条目按 IBKR GlobalTrader 收录。thinkorswim Trader 的包名按 [Google Play 应用页](https://play.google.com/store/apps/details?id=com.devexperts.tdmobile.platform.android.thinkorswim)核对；新增的五个主机名来自该应用的连接截图，截图中截断的 LaunchDarkly 和 Firebase 主机名按 [LaunchDarkly 域名清单](https://launchdarkly.com/docs/sdk/concepts/domain-list)与 [Firebase Remote Config API 文档](https://firebase.google.com/docs/reference/remote-config/rest)补全。域名规则会匹配所有访问这些主机的应用。截图中的 `sws-gateway-nr.schwab.com` 已由 `schwab.com` 覆盖，截断的 `thinkorswim-mobile-lb.schwab...` 未据此补全。香港银行中保留了 `hsbc.com`、`sc.com`、`ccb.com` 等集团域名，匹配范围可能超出香港业务。直连使用当前网络的出口，不会自动获得香港 IP。
 
 ### 普通代理 `proxy`
 
