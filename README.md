@@ -1,10 +1,10 @@
 # 金融应用分流规则
 
-按实际出口维护三组 Android 应用包名和服务域名，提供 **sing-box** 与 **Clash Meta / mihomo** 规则。共包含 **37 个应用包名、84 个域名后缀**；应用类别和特殊要求记录在本文中。
+按实际出口维护三组 Android 应用包名和服务域名，提供 **sing-box** 与 **Clash Meta / mihomo** 规则。共包含 **37 个应用包名、85 个域名后缀**；应用类别和特殊要求记录在本文中。
 
 | 规则组 | 收录范围 | 示例出口 | 包名 / 域名数 |
 | --- | --- | --- | --- |
-| [direct](direct.json) | 香港银行、数字银行与支付、部分加密应用、券商 | 直连 | 34 / 80 |
+| [direct](direct.json) | 香港银行、数字银行与支付、部分加密应用、券商 | 直连 | 34 / 81 |
 | [proxy](proxy.json) | Krak、Kraken | 普通代理 | 2 / 2 |
 | [bybit-eu](bybit-eu.json) | Bybit EU | 德国专用代理 `Bybit-EU-DE` | 1 / 2 |
 
@@ -52,15 +52,17 @@ build.py
 | 币安 | `com.binance.dev` | `binance.com`、`binance.vision`、`bnbstatic.com` |
 | Bitget Wallet | `com.bitkeep.wallet` | `web3.bitget.com`、`bitkeep.com`、`bitkeep.vip` |
 | Neverless | `money.boku.android` | `neverless.com` |
-| Schwab Mobile | `com.schwab.mobile` | `schwab.com`、`schwab.com.hk`、`schwab.co.uk` |
-| thinkorswim Trader | `com.devexperts.tdmobile.platform.android.thinkorswim` | `schwab.com`、`mobile.launchdarkly.com`、`clientstream.launchdarkly.com`、`www.trefis.com`、`c.evidon.com`、`firebaseremoteconfig.googleapis.com` |
+| Schwab Mobile | `com.schwab.mobile` | `schwab.com`、`schwabcdn.com`、`schwab.com.hk`、`schwab.co.uk` |
+| thinkorswim Trader | `com.devexperts.tdmobile.platform.android.thinkorswim` | `schwab.com`、`schwabcdn.com`、`mobile.launchdarkly.com`、`clientstream.launchdarkly.com`、`www.trefis.com`、`c.evidon.com`、`firebaseremoteconfig.googleapis.com` |
 | IBKR GlobalTrader / IBKR Mobile | `com.ibkr.gt.app` / `atws.app` | `ibkr.com`、`ibkrguides.com`、`ibllc.com`、`interactivebrokers.com`、`interactivebrokers.com.hk`、`interactivebrokers.co.uk`、`interactivebrokers.com.sg` |
 
 香港平安数字银行收录[个人版 `com.paobank.mobilebank.personal`](https://play.google.com/store/apps/details?id=com.paobank.mobilebank.personal)和[商业银行版 `hk.com.paob.app.enterprise`](https://play.google.com/store/apps/details?id=hk.com.paob.app.enterprise)，两版均直连。根据连接截图 `1000057020.jpg`，补充 `auth-baas.itigertech.com`、`bff-mobile-baas.itigertech.com`、`pushstat-hk.engagelab.com`、`dnha.play-analytics.com` 和 `firebaseinstallations.googleapis.com` 五个主机后缀。截图中截断的 BFF 主机名按同图认证主机的域名推断补全，并核对了补全后的公开 DNS 解析；Firebase Installations 主机名按 [Firebase Android SDK 官方源码](https://github.com/firebase/firebase-android-sdk/blob/master/firebase-installations/src/main/java/com/google/firebase/installations/remote/FirebaseInstallationServiceClient.java)补全。新增域名规则也会匹配其他应用访问这些主机的连接。
 
 截图中的 `mobilebanking.paob.com.hk` 和 `sensorsdata.paob.com.hk` 已由 `paob.com.hk` 覆盖。`189.1.244.101:19000` 的 UDP 连接通过个人版包名规则匹配直连，依赖客户端识别所属应用；未识别应用的流量仍需其他主配置规则处理。
 
-原 IBKR `Trader` 条目按 IBKR GlobalTrader 收录。thinkorswim Trader 的包名按 [Google Play 应用页](https://play.google.com/store/apps/details?id=com.devexperts.tdmobile.platform.android.thinkorswim)核对；新增的五个主机名来自该应用的连接截图，截图中截断的 LaunchDarkly 和 Firebase 主机名按 [LaunchDarkly 域名清单](https://launchdarkly.com/docs/sdk/concepts/domain-list)与 [Firebase Remote Config API 文档](https://firebase.google.com/docs/reference/remote-config/rest)补全。域名规则会匹配所有访问这些主机的应用。截图中的 `sws-gateway-nr.schwab.com` 已由 `schwab.com` 覆盖，截断的 `thinkorswim-mobile-lb.schwab...` 未据此补全。香港银行中保留了 `hsbc.com`、`sc.com`、`ccb.com` 等集团域名，匹配范围可能超出香港业务。直连使用当前网络的出口，不会自动获得香港 IP。
+原 IBKR `Trader` 条目按 IBKR GlobalTrader 收录。thinkorswim Trader 的包名按 [Google Play 应用页](https://play.google.com/store/apps/details?id=com.devexperts.tdmobile.platform.android.thinkorswim)核对；新增的五个主机名来自该应用的连接截图，截图中截断的 LaunchDarkly 和 Firebase 主机名按 [LaunchDarkly 域名清单](https://launchdarkly.com/docs/sdk/concepts/domain-list)与 [Firebase Remote Config API 文档](https://firebase.google.com/docs/reference/remote-config/rest)补全。域名规则会匹配所有访问这些主机的应用。截图中的 `sws-gateway-nr.schwab.com` 已由 `schwab.com` 覆盖，截断的 `thinkorswim-mobile-lb.schwab...` 未据此补全。
+
+`schwabcdn.com` 于 2026-10-16 按公开 DNS 与证书透明度记录核对后收录，按 Schwab 自有 CDN 域名处理，覆盖 `client.schwabcdn.com`、`static.schwabcdn.com`、`clientcontent.schwabcdn.com` 等主机；该域名的 NS 记录指向 `np1-4.schwab.com`，证书透明度日志中存在 `*.schwabcdn.com` 通配符证书。此规则同样会匹配所有访问该域名的应用。香港银行中保留了 `hsbc.com`、`sc.com`、`ccb.com` 等集团域名，匹配范围可能超出香港业务。直连使用当前网络的出口，不会自动获得香港 IP。
 
 ### 普通代理 `proxy`
 
@@ -160,7 +162,7 @@ python build.py --sing-box 'C:\Tools\sing-box.exe' --mihomo 'C:\Tools\mihomo.exe
 
 应用包名匹配依赖 Android 客户端识别连接所属应用；其他平台或经路由器转发的流量主要依赖域名。域名匹配需要客户端获得目标域名，列表不保证涵盖所有第三方验证、行情、支付或 DApp 服务。主配置按顺序匹配，先命中的规则优先。
 
-最初整合沿用已有规则，此后按应用连接截图补充域名。原 `custom-app` 记录的核对日期为 2026-09-21，Wise、你好中国及蚂蚁银行香港/澳门为 2026-09-23；香港平安数字银行个人版与商业银行版包名于 2026-10-08 按官方 Google Play 应用页核对。维护资料包括官方 Google Play 应用页及以下服务页面：
+最初整合沿用已有规则，此后按应用连接截图补充域名。原 `custom-app` 记录的核对日期为 2026-09-21，Wise、你好中国及蚂蚁银行香港/澳门为 2026-09-23；香港平安数字银行个人版与商业银行版包名于 2026-10-08 按官方 Google Play 应用页核对；`schwabcdn.com` 于 2026-10-16 按公开 DNS 与证书透明度记录核对。维护资料包括官方 Google Play 应用页及以下服务页面：
 
 - 加密货币：[Binance API](https://developers.binance.com/en/docs/products/spot/rest-api)、[Bitget Wallet](https://web3.bitget.com/)、[Neverless](https://neverless.com/)、[Bybit 资源示例](https://bybit-exchange.github.io/docs/v5/asset/convert/convert-coin-list)、[Krak](https://krak.app/)。
 - 数字银行与支付：[iFAST GB](https://play.google.com/store/apps/details?id=com.ifast.gb)、[StarryBlu](https://www.starryblu.com/app)、[Wise 更名说明](https://wise.com/us/blog/world-meet-wise)、[你好中国](https://www.unionpayintl.com/ZT/en/NHCAPP/)、[你好中国隐私政策](https://base.cup.com.cn/s/wl/SPA/international/index.html)、[蚂蚁香港](https://www.antbank.hk/about)、[蚂蚁澳门](https://www.antbank.mo/)。
