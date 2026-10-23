@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "rules": [
+    {
+      "package_name": [
+        "com.android.vending"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "play.google.com",
+        "play.googleapis.com",
+        "android.clients.google.com",
+        "gvt1.com",
+        "gvt2.com",
+        "gvt3.com"
+      ]
+    }
+  ]
+}

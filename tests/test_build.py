@@ -1,6 +1,7 @@
 import contextlib
 import io
 import json
+import os
 from pathlib import Path
 import subprocess
 import tempfile
@@ -147,34 +148,90 @@ class BuildTests(unittest.TestCase):
         self.assertEqual(self.snapshot(), before)
 
 
+class ToolResolutionTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name)
+
+    def test_prefers_tools_directory(self):
+        tools = self.root / "tools"
+        tools.mkdir()
+        binary = tools / ("sing-box.exe" if os.name == "nt" else "sing-box")
+        binary.write_bytes(b"")
+        with patch("build.shutil.which") as which:
+            self.assertEqual(build.resolve_executable("sing-box", self.root), str(binary))
+        which.assert_not_called()
+
+    def test_falls_back_to_path(self):
+        with patch("build.shutil.which", return_value="mihomo"):
+            self.assertEqual(build.resolve_executable("mihomo", self.root), "mihomo")
+
+    def test_missing_executable_raises(self):
+        with patch("build.shutil.which", return_value=None):
+            with self.assertRaises(FileNotFoundError):
+                build.resolve_executable("missing", self.root)
+
+    def test_explicit_path_must_exist(self):
+        binary = self.root / "custom" / "sing-box.exe"
+        binary.parent.mkdir()
+        binary.write_bytes(b"")
+        self.assertEqual(build.resolve_executable(str(binary), self.root), str(binary))
+        with self.assertRaises(FileNotFoundError):
+            build.resolve_executable(str(self.root / "absent"), self.root)
+
+
 class RoutingTests(unittest.TestCase):
-    def test_bybit_eu_matches_stay_out_of_general_groups(self):
-        def values(group, field):
-            data = json.loads((build.ROOT / f"{group}.json").read_text(encoding="utf-8"))
-            return {value for rule in data["rules"] for value in rule.get(field, [])}
+    DEDICATED = {
+        "bybit-eu": ("com.bybit.eu", {"bybit.eu", "bycsi.com"}),
+        "google-play": (
+            "com.android.vending",
+            {
+                "play.google.com",
+                "play.googleapis.com",
+                "android.clients.google.com",
+                "gvt1.com",
+                "gvt2.com",
+                "gvt3.com",
+            },
+        ),
+    }
 
-        self.assertIn("com.bybit.eu", values("bybit-eu", "package_name"))
-        self.assertTrue({"bybit.eu", "bycsi.com"} <= values("bybit-eu", "domain_suffix"))
-        for group in ("direct", "proxy"):
-            with self.subTest(group=group):
-                self.assertFalse(values(group, "package_name") & values("bybit-eu", "package_name"))
-                for general in values(group, "domain_suffix"):
-                    for dedicated in values("bybit-eu", "domain_suffix"):
-                        self.assertFalse(
-                            general == dedicated
-                            or general.endswith("." + dedicated)
-                            or dedicated.endswith("." + general),
-                            f"{general} overlaps the dedicated Bybit EU rule {dedicated}",
-                        )
+    @staticmethod
+    def values(group, field):
+        data = json.loads((build.ROOT / f"{group}.json").read_text(encoding="utf-8"))
+        return {value for rule in data["rules"] for value in rule.get(field, [])}
 
-    def test_sing_box_example_binds_dedicated_exit_before_general_rules(self):
+    def test_dedicated_rules_stay_out_of_other_groups(self):
+        for group, (package, domains) in self.DEDICATED.items():
+            self.assertIn(package, self.values(group, "package_name"))
+            self.assertTrue(domains <= self.values(group, "domain_suffix"))
+            for other in set(build.RULE_GROUPS) - {group}:
+                with self.subTest(group=group, other=other):
+                    self.assertNotIn(package, self.values(other, "package_name"))
+                    for general in self.values(other, "domain_suffix"):
+                        for dedicated in domains:
+                            self.assertFalse(
+                                general == dedicated
+                                or general.endswith("." + dedicated)
+                                or dedicated.endswith("." + general),
+                                f"{general} overlaps the dedicated {group} rule {dedicated}",
+                            )
+
+    def test_sing_box_example_binds_dedicated_exits_before_general_rules(self):
         example = json.loads((build.ROOT / "examples" / "sing-box.json").read_text(encoding="utf-8"))
         route = example["route"]
-        self.assertEqual(route["rules"][0], {
-            "rule_set": ["bybit-eu"], "action": "route", "outbound": "Bybit-EU-DE",
-        })
+        self.assertEqual(route["rules"][:2], [
+            {"rule_set": ["bybit-eu"], "action": "route", "outbound": "Bybit-EU-DE"},
+            {"rule_set": ["google-play"], "action": "route", "outbound": "vless-warp"},
+        ])
         destinations = {group: rule["outbound"] for rule in route["rules"] for group in rule["rule_set"]}
-        self.assertEqual(destinations, {"direct": "direct", "proxy": "proxy", "bybit-eu": "Bybit-EU-DE"})
+        self.assertEqual(destinations, {
+            "direct": "direct",
+            "proxy": "proxy",
+            "bybit-eu": "Bybit-EU-DE",
+            "google-play": "vless-warp",
+        })
         providers = {provider["tag"]: provider for provider in route["rule_set"]}
         self.assertEqual(set(providers), set(destinations))
         for group, provider in providers.items():

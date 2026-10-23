@@ -1,5 +1,6 @@
 # 合并到现有 mihomo 配置；PROXY 替换为已有的普通代理组。
 # 德国节点01 替换为实际德国出口节点，Bybit-EU-DE 组内只保留德国节点。
+# vless-warp 替换为实际 WARP 节点名称。
 mode: rule
 find-process-mode: strict
 
@@ -24,6 +25,21 @@ rule-providers:
     format: yaml
     url: https://raw.githubusercontent.com/eve2ptp/hk-bank/main/clash-meta/bybit-eu-process.yaml
     path: ./rule-providers/bybit-eu-process.yaml
+    interval: 86400
+  # Google Play：独立 WARP 出口。
+  google-play:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/eve2ptp/hk-bank/main/clash-meta/google-play.mrs
+    path: ./rule-providers/google-play.mrs
+    interval: 86400
+  google-play-process:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/eve2ptp/hk-bank/main/clash-meta/google-play-process.yaml
+    path: ./rule-providers/google-play-process.yaml
     interval: 86400
   # 直连：香港银行、数字银行与支付、币安/Bitget Wallet/Neverless、券商。
   direct:
@@ -63,6 +79,12 @@ rules:
   - RULE-SET,bybit-eu,Bybit-EU-DE
   - RULE-SET,bybit-eu-process,REJECT
   - RULE-SET,bybit-eu,REJECT
+
+  # Google Play 使用 vless-warp；保留 REJECT，避免回落到其他出口。
+  - RULE-SET,google-play-process,vless-warp
+  - RULE-SET,google-play,vless-warp
+  - RULE-SET,google-play-process,REJECT
+  - RULE-SET,google-play,REJECT
 
   - RULE-SET,direct-process,DIRECT
   - RULE-SET,direct,DIRECT

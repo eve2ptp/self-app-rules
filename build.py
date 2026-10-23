@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Build direct, proxy and Bybit EU rules for sing-box and mihomo."""
+"""Build direct, proxy, Bybit EU and Google Play rules for sing-box and mihomo."""
 
 import argparse
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -10,7 +11,7 @@ import tempfile
 
 
 ROOT = Path(__file__).resolve().parent
-RULE_GROUPS = ("direct", "proxy", "bybit-eu")
+RULE_GROUPS = ("direct", "proxy", "bybit-eu", "google-play")
 RULE_TYPES = {"package_name", "domain_suffix"}
 
 
@@ -83,15 +84,40 @@ def build_rules(root=ROOT, sing_box="sing-box", mihomo="mihomo"):
             print(f"Built {output.relative_to(root).as_posix()}")
 
 
+def resolve_executable(executable, root=ROOT):
+    path = Path(executable)
+    if path.is_absolute() or path.parent != Path("."):
+        if path.is_file():
+            return str(path)
+        raise FileNotFoundError(executable)
+    suffixes = (".exe", "") if os.name == "nt" else ("",)
+    for suffix in suffixes:
+        candidate = root / "tools" / f"{executable}{suffix}"
+        if candidate.is_file():
+            return str(candidate)
+    found = shutil.which(executable)
+    if found is None:
+        raise FileNotFoundError(executable)
+    return found
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--sing-box", default="sing-box", help="sing-box executable path")
-    parser.add_argument("--mihomo", default="mihomo", help="mihomo executable path")
+    parser.add_argument(
+        "--sing-box", default="sing-box",
+        help="sing-box executable name or path (default: tools/sing-box, then PATH)",
+    )
+    parser.add_argument(
+        "--mihomo", default="mihomo",
+        help="mihomo executable name or path (default: tools/mihomo, then PATH)",
+    )
     args = parser.parse_args()
-    for executable in (args.sing_box, args.mihomo):
-        if shutil.which(executable) is None:
-            parser.error(f"executable not found: {executable}")
-    build_rules(sing_box=args.sing_box, mihomo=args.mihomo)
+    try:
+        sing_box = resolve_executable(args.sing_box)
+        mihomo = resolve_executable(args.mihomo)
+    except FileNotFoundError as error:
+        parser.error(f"executable not found: {error.args[0]}")
+    build_rules(sing_box=sing_box, mihomo=mihomo)
 
 
 if __name__ == "__main__":

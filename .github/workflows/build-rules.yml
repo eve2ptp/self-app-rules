@@ -7,6 +7,7 @@ on:
       - "direct.json"
       - "proxy.json"
       - "bybit-eu.json"
+      - "google-play.json"
       - "build.py"
       - "tests/**"
       - "examples/**"
@@ -18,6 +19,7 @@ on:
       - "direct.json"
       - "proxy.json"
       - "bybit-eu.json"
+      - "google-play.json"
       - "build.py"
       - "tests/**"
       - "examples/**"
@@ -82,7 +84,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          for group in direct proxy bybit-eu; do
+          for group in direct proxy bybit-eu google-play; do
             git add "$group.srs" "clash-meta/$group.mrs" \
               "clash-meta/$group-process.yaml"
           done

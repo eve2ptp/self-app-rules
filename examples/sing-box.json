@@ -21,6 +21,14 @@
       },
       {
         "type": "remote",
+        "tag": "google-play",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/eve2ptp/hk-bank/main/google-play.srs",
+        "download_detour": "proxy",
+        "update_interval": "1d"
+      },
+      {
+        "type": "remote",
         "tag": "direct",
         "format": "binary",
         "url": "https://raw.githubusercontent.com/eve2ptp/hk-bank/main/direct.srs",
@@ -43,6 +51,13 @@
         ],
         "action": "route",
         "outbound": "Bybit-EU-DE"
+      },
+      {
+        "rule_set": [
+          "google-play"
+        ],
+        "action": "route",
+        "outbound": "vless-warp"
       },
       {
         "rule_set": [
