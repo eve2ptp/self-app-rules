@@ -1,14 +1,24 @@
 # 合并到现有 mihomo 配置；PROXY 替换为已有的普通代理组。
-# 德国节点01 替换为实际德国出口节点，Bybit-EU-DE 组内只保留德国节点。
+# DE-IEPL-03 替换为实际德国出口节点，Bybit-EU-DE 组内只保留德国节点。
 # vless-warp 替换为实际 WARP 节点名称。
 mode: rule
 find-process-mode: strict
+
+proxies:
+  - name: DE-IEPL-03
+    type: trojan
+    server:
+    port:
+    password:
+    sni:
+    skip-cert-verify: true
+    tfo: false
 
 proxy-groups:
   - name: Bybit-EU-DE
     type: select
     proxies:
-      - 德国节点01
+      - DE-IEPL-03
 
 rule-providers:
   # Bybit EU：德国专用出口，独立于普通代理。

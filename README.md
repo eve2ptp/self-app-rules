@@ -101,7 +101,7 @@ build.py
 
 将 [examples/sing-box.json](examples/sing-box.json) 的四组 `route.rule_set` 和 `route.rules` 合并到现有配置，放在通用分流规则之前；已有 DNS 劫持、嗅探等处理规则仍放在这些分流规则之前。示例使用 `action: route`，需要支持该写法的 sing-box 版本（1.11+）。
 
-将 `direct`、`proxy`、`vless-warp` 出站引用替换为现有出站标签，合并示例中的 `Bybit-EU-DE` 选择器，将 `德国节点01` 替换为已有德国出口节点的 tag。示例按 Bybit EU、Google Play、直连、普通代理的顺序匹配。规则集标签和出站标签属于不同配置项，修改时注意同步各自的引用。
+将 `direct`、`proxy`、`vless-warp` 出站引用替换为现有出站标签，合并示例中的 `Bybit-EU-DE` 选择器，将 `DE-IEPL-03` 替换为已有德国出口节点的 tag。示例按 Bybit EU、Google Play、直连、普通代理的顺序匹配。规则集标签和出站标签属于不同配置项，修改时注意同步各自的引用。
 
 `download_detour: proxy` 仅控制规则下载，可按需替换或移除，不决定 Bybit EU 和 Google Play 的业务出口。源规则订阅可将 `format` 改为 `source`，URL 的 `.srs` 改为 `.json`。
 
@@ -118,7 +118,7 @@ build.py
 
 ## Clash Meta / mihomo 接入
 
-将 [examples/clash-meta.yaml](examples/clash-meta.yaml) 合并到现有配置，启用 `mode: rule` 和 `find-process-mode: strict`。将示例中的 `PROXY` 替换为已有普通代理组名称，`vless-warp` 替换为已有 WARP 节点名称；合并 `Bybit-EU-DE` 策略组，将 `德国节点01` 替换为已有德国出口节点名称。保留已有其他策略组、provider 和规则，避免重复声明顶层字段；若 provider 重名，同时修改其定义和 `RULE-SET` 引用。
+将 [examples/clash-meta.yaml](examples/clash-meta.yaml) 合并到现有配置，启用 `mode: rule` 和 `find-process-mode: strict`。将示例中的 `PROXY` 替换为已有普通代理组名称，`vless-warp` 替换为已有 WARP 节点名称；合并 `Bybit-EU-DE` 策略组，将 `DE-IEPL-03` 替换为已有德国出口节点名称。保留已有其他策略组、provider 和规则，避免重复声明顶层字段；若 provider 重名，同时修改其定义和 `RULE-SET` 引用。
 
 每组使用两个 provider，共八个：
 

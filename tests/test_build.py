@@ -2,10 +2,10 @@ import contextlib
 import io
 import json
 import os
-from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 import build
@@ -19,20 +19,36 @@ class RenderTests(unittest.TestCase):
         self.source = self.root / "direct.json"
 
     def render(self, rules):
-        self.source.write_text(json.dumps({"version": 1, "rules": rules}), encoding="utf-8")
+        self.source.write_text(
+            json.dumps({"version": 1, "rules": rules}), encoding="utf-8"
+        )
         return build.render_clash_meta(self.source, self.root)
 
     def test_independent_domain_and_package_matches_preserve_case(self):
-        domains, processes = self.render([
-            {"package_name": ["com.MobileTreeApp", "com.outSystems.FubonHKeKYC.prd"]},
-            {"domain_suffix": ["example.com", "service.example.net"]},
-        ])
+        domains, processes = self.render(
+            [
+                {
+                    "package_name": [
+                        "com.MobileTreeApp",
+                        "com.outSystems.FubonHKeKYC.prd",
+                    ]
+                },
+                {"domain_suffix": ["example.com", "service.example.net"]},
+            ]
+        )
         self.assertEqual(domains, "+.example.com\n+.service.example.net\n")
-        payload = [json.loads(line[4:]) for line in processes.splitlines() if line.startswith("  - ")]
-        self.assertEqual(payload, [
-            "PROCESS-NAME,com.MobileTreeApp",
-            "PROCESS-NAME,com.outSystems.FubonHKeKYC.prd",
-        ])
+        payload = [
+            json.loads(line[4:])
+            for line in processes.splitlines()
+            if line.startswith("  - ")
+        ]
+        self.assertEqual(
+            payload,
+            [
+                "PROCESS-NAME,com.MobileTreeApp",
+                "PROCESS-NAME,com.outSystems.FubonHKeKYC.prd",
+            ],
+        )
         self.assertIn("Generated from direct.json", processes)
 
     def test_rejects_conditions_that_would_change_matching_semantics(self):
@@ -48,13 +64,28 @@ class RenderTests(unittest.TestCase):
 
     def test_rejects_invalid_values(self):
         for field in ("package_name", "domain_suffix"):
-            for values in ([], "example.com", [""], [None], [42], ["a,b"], ["a\nb"], ["a\rb"]):
-                with self.subTest(field=field, values=values), self.assertRaises(ValueError):
+            for values in (
+                [],
+                "example.com",
+                [""],
+                [None],
+                [42],
+                ["a,b"],
+                ["a\nb"],
+                ["a\rb"],
+            ):
+                with (
+                    self.subTest(field=field, values=values),
+                    self.assertRaises(ValueError),
+                ):
                     self.render([{field: values}])
 
     def test_requires_domains_for_mrs(self):
         for rules in ([], [{"package_name": ["com.example"]}]):
-            with self.subTest(rules=rules), self.assertRaisesRegex(ValueError, "at least one domain_suffix"):
+            with (
+                self.subTest(rules=rules),
+                self.assertRaisesRegex(ValueError, "at least one domain_suffix"),
+            ):
                 self.render(rules)
 
     def test_domain_only_source_has_empty_process_payload(self):
@@ -64,7 +95,10 @@ class RenderTests(unittest.TestCase):
     def test_rejects_invalid_rule_set_structure(self):
         for data in ([], {}, {"rules": None}, {"rules": {}}):
             self.source.write_text(json.dumps(data), encoding="utf-8")
-            with self.subTest(data=data), self.assertRaisesRegex(ValueError, "rules list"):
+            with (
+                self.subTest(data=data),
+                self.assertRaisesRegex(ValueError, "rules list"),
+            ):
                 build.render_clash_meta(self.source, self.root)
 
 
@@ -76,10 +110,13 @@ class BuildTests(unittest.TestCase):
         self.sources = []
         for group in build.RULE_GROUPS:
             source = self.root / f"{group}.json"
-            data = {"version": 1, "rules": [
-                {"package_name": [f"com.{group}"]},
-                {"domain_suffix": [f"{group}.example"]},
-            ]}
+            data = {
+                "version": 1,
+                "rules": [
+                    {"package_name": [f"com.{group}"]},
+                    {"domain_suffix": [f"{group}.example"]},
+                ],
+            }
             source.write_text(json.dumps(data), encoding="utf-8")
             self.sources.append(source)
 
@@ -99,7 +136,11 @@ class BuildTests(unittest.TestCase):
             Path(command[-1]).write_bytes(b"mrs\n" + Path(command[-2]).read_bytes())
 
     def snapshot(self):
-        return {path.relative_to(self.root): path.read_bytes() for path in self.root.rglob("*") if path.is_file()}
+        return {
+            path.relative_to(self.root): path.read_bytes()
+            for path in self.root.rglob("*")
+            if path.is_file()
+        }
 
     def run_build(self):
         with contextlib.redirect_stdout(io.StringIO()):
@@ -114,17 +155,26 @@ class BuildTests(unittest.TestCase):
             self.assertEqual(srs.read_bytes(), b"srs\n" + source.read_bytes())
             expected_domain = f"mrs\n+.{source.stem}.example\n"
             self.assertEqual(mrs.read_text(encoding="utf-8"), expected_domain)
-            self.assertIn(f"PROCESS-NAME,com.{source.stem}", processes.read_text(encoding="utf-8"))
-        self.assertEqual(len(self.snapshot()), 4 * len(self.sources))  # One source and three artifacts per group.
+            self.assertIn(
+                f"PROCESS-NAME,com.{source.stem}", processes.read_text(encoding="utf-8")
+            )
+        self.assertEqual(
+            len(self.snapshot()), 4 * len(self.sources)
+        )  # One source and three artifacts per group.
 
     def test_failed_compilers_leave_all_existing_artifacts_untouched(self):
         for source in self.sources:
             for output in self.artifacts(source):
                 output.parent.mkdir(exist_ok=True)
-                output.write_bytes(b"original " + output.relative_to(self.root).as_posix().encode())
+                output.write_bytes(
+                    b"original " + output.relative_to(self.root).as_posix().encode()
+                )
         before = self.snapshot()
         compiler_count = 2 * len(self.sources)
-        for failure_index in (compiler_count - 2, compiler_count - 1):  # Fail the last SRS or MRS.
+        for failure_index in (
+            compiler_count - 2,
+            compiler_count - 1,
+        ):  # Fail the last SRS or MRS.
             calls = []
 
             def fail_late(command, check):
@@ -133,13 +183,18 @@ class BuildTests(unittest.TestCase):
                     raise subprocess.CalledProcessError(1, command)
                 self.fake_compile(command, check)
 
-            with self.subTest(compiler=failure_index), patch("build.subprocess.run", side_effect=fail_late):
+            with (
+                self.subTest(compiler=failure_index),
+                patch("build.subprocess.run", side_effect=fail_late),
+            ):
                 with self.assertRaises(subprocess.CalledProcessError):
                     self.run_build()
             self.assertEqual(self.snapshot(), before)
 
     def test_invalid_last_source_prevents_all_compilation(self):
-        self.sources[-1].write_text('{"rules": [{"domain_suffix": []}]}', encoding="utf-8")
+        self.sources[-1].write_text(
+            '{"rules": [{"domain_suffix": []}]}', encoding="utf-8"
+        )
         before = self.snapshot()
         with patch("build.subprocess.run") as compiler:
             with self.assertRaises(ValueError):
@@ -160,7 +215,9 @@ class ToolResolutionTests(unittest.TestCase):
         binary = tools / ("sing-box.exe" if os.name == "nt" else "sing-box")
         binary.write_bytes(b"")
         with patch("build.shutil.which") as which:
-            self.assertEqual(build.resolve_executable("sing-box", self.root), str(binary))
+            self.assertEqual(
+                build.resolve_executable("sing-box", self.root), str(binary)
+            )
         which.assert_not_called()
 
     def test_falls_back_to_path(self):
@@ -219,27 +276,54 @@ class RoutingTests(unittest.TestCase):
                             )
 
     def test_sing_box_example_binds_dedicated_exits_before_general_rules(self):
-        example = json.loads((build.ROOT / "examples" / "sing-box.json").read_text(encoding="utf-8"))
+        example = json.loads(
+            (build.ROOT / "examples" / "sing-box.json").read_text(encoding="utf-8")
+        )
         route = example["route"]
-        self.assertEqual(route["rules"][:2], [
-            {"rule_set": ["bybit-eu"], "action": "route", "outbound": "Bybit-EU-DE"},
-            {"rule_set": ["google-play"], "action": "route", "outbound": "vless-warp"},
-        ])
-        destinations = {group: rule["outbound"] for rule in route["rules"] for group in rule["rule_set"]}
-        self.assertEqual(destinations, {
-            "direct": "direct",
-            "proxy": "proxy",
-            "bybit-eu": "Bybit-EU-DE",
-            "google-play": "vless-warp",
-        })
+        self.assertEqual(
+            route["rules"][:2],
+            [
+                {
+                    "rule_set": ["bybit-eu"],
+                    "action": "route",
+                    "outbound": "Bybit-EU-DE",
+                },
+                {
+                    "rule_set": ["google-play"],
+                    "action": "route",
+                    "outbound": "vless-warp",
+                },
+            ],
+        )
+        destinations = {
+            group: rule["outbound"]
+            for rule in route["rules"]
+            for group in rule["rule_set"]
+        }
+        self.assertEqual(
+            destinations,
+            {
+                "direct": "direct",
+                "proxy": "proxy",
+                "bybit-eu": "Bybit-EU-DE",
+                "google-play": "vless-warp",
+            },
+        )
         providers = {provider["tag"]: provider for provider in route["rule_set"]}
         self.assertEqual(set(providers), set(destinations))
         for group, provider in providers.items():
-            self.assertEqual(provider["url"], f"https://raw.githubusercontent.com/eve2ptp/hk-bank/main/{group}.srs")
+            self.assertEqual(
+                provider["url"],
+                f"https://raw.githubusercontent.com/eve2ptp/hk-bank/main/{group}.srs",
+            )
             self.assertTrue((build.ROOT / f"{group}.json").is_file())
-        selector = next(outbound for outbound in example["outbounds"] if outbound["tag"] == "Bybit-EU-DE")
-        self.assertEqual(selector["outbounds"], ["德国节点01"])
-        self.assertEqual(selector["default"], "德国节点01")
+        selector = next(
+            outbound
+            for outbound in example["outbounds"]
+            if outbound["tag"] == "Bybit-EU-DE"
+        )
+        self.assertEqual(selector["outbounds"], ["DE-IEPL-03"])
+        self.assertEqual(selector["default"], "DE-IEPL-03")
 
 
 if __name__ == "__main__":

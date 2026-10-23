@@ -1,12 +1,25 @@
 {
   "outbounds": [
     {
+      "type": "trojan",
+      "tag": "DE-IEPL-03",
+      "server": "",
+      "server_port": 20022,
+      "password": "",
+      "tls": {
+        "enabled": true,
+        "server_name": "",
+        "insecure": true
+      },
+      "tcp_fast_open": false
+    },
+    {
       "type": "selector",
       "tag": "Bybit-EU-DE",
       "outbounds": [
-        "德国节点01"
+        "DE-IEPL-03"
       ],
-      "default": "德国节点01"
+      "default": "DE-IEPL-03"
     }
   ],
   "route": {
