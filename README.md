@@ -1,10 +1,10 @@
 # 金融应用分流规则
 
-按实际出口维护四组 Android 应用包名和服务域名，提供 **sing-box** 与 **Clash Meta / mihomo** 规则。共包含 **38 个应用包名、91 个域名后缀**；应用类别和特殊要求记录在本文中。
+按实际出口维护四组 Android 应用包名和服务域名，提供 **sing-box** 与 **Clash Meta / mihomo** 规则。共包含 **38 个应用包名、90 个域名后缀**；应用类别和特殊要求记录在本文中。
 
 | 规则组 | 收录范围 | 示例出口 | 包名 / 域名数 |
 | --- | --- | --- | --- |
-| [direct](direct.json) | 香港银行、数字银行与支付、部分加密应用、券商 | 直连 | 34 / 81 |
+| [direct](direct.json) | 香港银行、数字银行与支付、部分加密应用、券商 | 直连 | 34 / 80 |
 | [proxy](proxy.json) | Krak、Kraken | 普通代理 | 2 / 2 |
 | [bybit-eu](bybit-eu.json) | Bybit EU | 德国专用代理 `Bybit-EU-DE` | 1 / 2 |
 | [google-play](google-play.json) | Google Play Store | 独立 WARP 节点 `vless-warp` | 1 / 6 |
@@ -44,7 +44,7 @@ build.py
 
 ### 直连 `direct`
 
-香港银行清单共 22 个包名、50 个域名后缀，包括 ZA、Mox、WeLab 等数字银行、蚂蚁银行香港及香港平安数字银行。完整条目见 [direct.json](direct.json)。其余直连应用如下，按应用列出包名和域名，便于查找和维护：
+香港银行清单共 22 个包名、49 个域名后缀，包括 ZA、Mox、WeLab 等数字银行、蚂蚁银行香港及香港平安数字银行。完整条目见 [direct.json](direct.json)。其余直连应用如下，按应用列出包名和域名，便于查找和维护：
 
 | 应用 | Android 包名 | 域名后缀 |
 | --- | --- | --- |
@@ -153,7 +153,7 @@ MRS 不保存 `PROCESS-NAME`，因此需要同时引用域名和包名 provider�
 
 只编辑 `direct.json`、`proxy.json`、`bybit-eu.json`、`google-play.json`；新增应用时按实际出口选文件，并在本文补充应用名、包名、域名和特殊要求。切换出口时，应从旧组移除对应条目。
 
-源文件保持标准 JSON，不能加入 `//`、`#` 注释或规则内的 `comment` 字段。说明集中在本文和支持注释的 mihomo 配置示例中。`package_name` 与 `domain_suffix` 必须放在独立的规则对象中；放在同一对象会成为 AND 条件，构建脚本会拒绝这种输入。保留包名大小写，不要直接编辑生成产物。
+源文件保持标准 JSON，不能加入 `//`、`#` 注释或规则内的 `comment` 字段。说明集中在本文和支持注释的 mihomo 配置示例中。`package_name` 与 `domain_suffix` 必须放在独立的规则对象中；放在同一对象会成为 AND 条件，构建脚本会拒绝这种输入。同一文件内的重复包名、重复域名，以及已被其他后缀覆盖的子域名（如已有 `ccb.com` 时的 `asia.ccb.com`）也会被拒绝。保留包名大小写，不要直接编辑生成产物；修改条目后请同步本文开头的数量统计，测试会校验。
 
 依赖 Python 3.10+ 标准库、sing-box 和 mihomo，无需 pip 依赖。构建脚本优先使用 `tools/` 下的编译器（Windows 为 `tools/sing-box.exe` 和 `tools/mihomo.exe`，其他平台为对应无扩展名文件），找不到时再回退到 PATH；`tools/` 已加入 `.gitignore`，不提交到仓库。CI 固定使用 sing-box **1.14.1**、mihomo **1.19.31**。
 

@@ -21,6 +21,7 @@ def render_clash_meta(source, root=ROOT):
         raise ValueError(f"{source}: expected a rules list")
     domains = []
     processes = []
+    seen = {field: set() for field in RULE_TYPES}
     for rule in data["rules"]:
         # Splitting fields would turn sing-box AND conditions into OR rules.
         if not isinstance(rule, dict) or len(rule) != 1 or next(iter(rule)) not in RULE_TYPES:
@@ -31,6 +32,24 @@ def render_clash_meta(source, root=ROOT):
         for value in values:
             if not isinstance(value, str) or not value or any(c in value for c in ",\r\n"):
                 raise ValueError(f"{source}: invalid {field} value: {value!r}")
+            # Package names keep their case; domain names are case-insensitive.
+            key = value.lower() if field == "domain_suffix" else value
+            if key in seen[field]:
+                raise ValueError(f"{source}: duplicate {field} value: {value!r}")
+            if field == "domain_suffix":
+                overlap = next(
+                    (
+                        other
+                        for other in seen[field]
+                        if key.endswith("." + other) or other.endswith("." + key)
+                    ),
+                    None,
+                )
+                if overlap is not None:
+                    raise ValueError(
+                        f"{source}: domain_suffix {value!r} overlaps {overlap!r}"
+                    )
+            seen[field].add(key)
             if field == "domain_suffix":
                 # +. matches both the domain itself and its subdomains.
                 domains.append(f"+.{value}")

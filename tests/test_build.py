@@ -80,6 +80,28 @@ class RenderTests(unittest.TestCase):
                 ):
                     self.render([{field: values}])
 
+    def test_rejects_duplicate_and_redundant_values(self):
+        for rules in (
+            [
+                {"package_name": ["com.example", "com.example"]},
+                {"domain_suffix": ["example.com"]},
+            ],
+            [{"domain_suffix": ["example.com"]}, {"domain_suffix": ["Example.com"]}],
+            [{"domain_suffix": ["api.example.com", "example.com"]}],
+            [{"domain_suffix": ["example.com", "a.b.example.com"]}],
+        ):
+            with self.subTest(rules=rules), self.assertRaises(ValueError):
+                self.render(rules)
+
+    def test_accepts_distinct_values_that_only_share_text(self):
+        domains, _ = self.render(
+            [
+                {"package_name": ["com.example", "com.Example"]},
+                {"domain_suffix": ["example.com", "notexample.com", "example.com.hk"]},
+            ]
+        )
+        self.assertEqual(domains, "+.example.com\n+.notexample.com\n+.example.com.hk\n")
+
     def test_requires_domains_for_mrs(self):
         for rules in ([], [{"package_name": ["com.example"]}]):
             with (
